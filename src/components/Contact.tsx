@@ -1,12 +1,36 @@
 import { Mail, Phone, MapPin, Linkedin, Github, Send, ExternalLink } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { portfolioAPI } from '@/lib/supabase';
 
 const Contact = () => {
+  const [personalInfo, setPersonalInfo] = useState({
+    name: 'Mallikarjun Kuri',
+    location: 'Bangalore, Karnataka', 
+    phone: '+91-7483989991',
+    email: 'mallikarjunkuri334@gmail.com',
+    linkedin: 'https://www.linkedin.com/in/mallikarjun-kuri-505211207/',
+    github: 'https://github.com/MalliKarjun008'
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchPersonalInfo = async () => {
+      try {
+        const data = await portfolioAPI.getPersonalInfo();
+        setPersonalInfo(data);
+      } catch (error) {
+        console.error('Error fetching personal info:', error);
+        // Keep default values on error  
+      }
+    };
+
+    fetchPersonalInfo();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -15,34 +39,44 @@ const Contact = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real implementation, you would send this data to a backend service
-    console.log('Form submitted:', formData);
-    // For now, we'll just open the email client
-    const subject = encodeURIComponent('Contact from Portfolio Website');
-    const body = encodeURIComponent(`Hi Mallikarjun,\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`);
-    window.location.href = `mailto:mallikarjunkuri334@gmail.com?subject=${subject}&body=${body}`;
+    setIsSubmitting(true);
+    
+    try {
+      await portfolioAPI.submitContact(formData);
+      // Reset form on success
+      setFormData({ name: '', email: '', message: '' });
+      alert('Thank you for your message! I will get back to you soon.');
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      // Fallback to email client
+      const subject = encodeURIComponent('Contact from Portfolio Website');
+      const body = encodeURIComponent(`Hi ${personalInfo.name},\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`);
+      window.location.href = `mailto:${personalInfo.email}?subject=${subject}&body=${body}`;
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [
     {
       icon: <Mail className="text-primary" size={20} />,
       label: "Email",
-      value: "mallikarjunkuri334@gmail.com",
-      href: "mailto:mallikarjunkuri334@gmail.com"
+      value: personalInfo.email,
+      href: `mailto:${personalInfo.email}`
     },
     {
       icon: <Phone className="text-secondary" size={20} />,
-      label: "Phone",
-      value: "+91-7483989991",
-      href: "tel:+917483989991"
+      label: "Phone", 
+      value: personalInfo.phone,
+      href: `tel:${personalInfo.phone.replace(/[^0-9+]/g, '')}`
     },
     {
       icon: <MapPin className="text-accent" size={20} />,
       label: "Location",
-      value: "Bangalore, Karnataka",
-      href: "https://maps.google.com/?q=Bangalore,Karnataka"
+      value: personalInfo.location,
+      href: `https://maps.google.com/?q=${encodeURIComponent(personalInfo.location)}`
     }
   ];
 
@@ -50,13 +84,13 @@ const Contact = () => {
     {
       name: "LinkedIn",
       icon: <Linkedin size={20} />,
-      href: "https://www.linkedin.com/in/mallikarjun-kuri-505211207/",
+      href: personalInfo.linkedin,
       color: "primary"
     },
     {
-      name: "GitHub",
+      name: "GitHub", 
       icon: <Github size={20} />,
-      href: "https://github.com/MalliKarjun008",
+      href: personalInfo.github,
       color: "secondary"
     }
   ];
@@ -183,10 +217,11 @@ const Contact = () => {
 
               <button
                 type="submit"
-                className="w-full btn-hero-primary flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className="w-full btn-hero-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send size={20} />
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>

@@ -1,7 +1,9 @@
 import { ExternalLink, Github, Database, Brain, Globe, Shield } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { portfolioAPI } from '@/lib/supabase';
 
 const Projects = () => {
-  const projects = [
+  const [projects, setProjects] = useState([
     {
       title: "Tourism Management System",
       description: "Built a scalable backend tourism management system with secure RESTful APIs and comprehensive CRUD operations for managing tourist destinations, bookings, and user data.",
@@ -30,7 +32,35 @@ const Projects = () => {
       icon: <Brain className="text-secondary" size={32} />,
       color: "secondary"
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await portfolioAPI.getProjects();
+        const formattedProjects = data.map((project: any, index: number) => ({
+          title: project.title,
+          description: project.description,
+          technologies: project.technologies,
+          github: project.github_url,
+          features: [
+            "Modern architecture",
+            "Scalable design", 
+            "Best practices",
+            "Production ready"
+          ],
+          icon: index % 2 === 0 ? <Globe className="text-primary" size={32} /> : <Brain className="text-secondary" size={32} />,
+          color: index % 2 === 0 ? "primary" : "secondary"
+        }));
+        setProjects(formattedProjects);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        // Keep default values on error
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   return (
     <section id="projects" className="section-container bg-surface/50">

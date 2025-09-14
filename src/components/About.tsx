@@ -1,6 +1,25 @@
 import { GraduationCap, Heart, Code, Brain } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { portfolioAPI } from '@/lib/supabase';
 
 const About = () => {
+  const [aboutData, setAboutData] = useState({
+    bio: "Final-year Computer Science Engineering student at BMS College of Engineering with strong problem-solving skills and passion for fullstack development, AI/ML, and scalable systems."
+  });
+
+  useEffect(() => {
+    const fetchAbout = async () => {
+      try {
+        const data = await portfolioAPI.getAbout();
+        setAboutData(data);
+      } catch (error) {
+        console.error('Error fetching about data:', error);
+        // Keep default values on error
+      }
+    };
+
+    fetchAbout();
+  }, []);
   return (
     <section id="about" className="section-container">
       <div className="text-center mb-16">
@@ -14,21 +33,7 @@ const About = () => {
         <div className="fade-in-left">
           <div className="space-y-6">
             <p className="text-lg text-muted-foreground leading-relaxed">
-              I'm a final-year <span className="text-primary font-semibold">Computer Science Engineering</span> student 
-              at BMS College of Engineering with a strong passion for technology and innovation.
-            </p>
-            
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              My journey in tech is driven by curiosity and a desire to solve real-world problems through 
-              <span className="text-secondary font-semibold"> fullstack development</span>, 
-              <span className="text-accent font-semibold"> artificial intelligence</span>, and 
-              <span className="text-primary font-semibold"> scalable system design</span>.
-            </p>
-
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              I believe in continuous learning and staying updated with the latest technologies. 
-              My approach combines strong problem-solving skills with creative thinking to build 
-              solutions that make a difference.
+              {aboutData.bio}
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">

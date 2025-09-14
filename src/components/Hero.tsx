@@ -1,6 +1,30 @@
 import { Download, Mail, MapPin, Linkedin, Github, ExternalLink } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { portfolioAPI } from '@/lib/supabase';
 
 const Hero = () => {
+  const [personalInfo, setPersonalInfo] = useState({
+    name: 'Mallikarjun Kuri',
+    location: 'Bangalore, Karnataka',
+    phone: '+91-7483989991',
+    email: 'mallikarjunkuri334@gmail.com',
+    linkedin: 'https://www.linkedin.com/in/mallikarjun-kuri-505211207/',
+    github: 'https://github.com/MalliKarjun008'
+  });
+
+  useEffect(() => {
+    const fetchPersonalInfo = async () => {
+      try {
+        const data = await portfolioAPI.getPersonalInfo();
+        setPersonalInfo(data);
+      } catch (error) {
+        console.error('Error fetching personal info:', error);
+        // Keep default values on error
+      }
+    };
+
+    fetchPersonalInfo();
+  }, []);
   const handleDownloadResume = () => {
     // This would typically download a PDF file
     const link = document.createElement('a');
@@ -27,7 +51,7 @@ const Hero = () => {
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
             <span className="block text-foreground">Hi, I'm</span>
             <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Mallikarjun Kuri
+              {personalInfo.name}
             </span>
           </h1>
         </div>
@@ -46,15 +70,15 @@ const Hero = () => {
           <div className="flex flex-wrap items-center justify-center gap-6 text-muted-foreground">
             <div className="flex items-center gap-2">
               <MapPin size={20} className="text-primary" />
-              <span>Bangalore, Karnataka</span>
+              <span>{personalInfo.location}</span>
             </div>
             <div className="flex items-center gap-2">
               <Mail size={20} className="text-secondary" />
-              <a href="mailto:mallikarjunkuri334@gmail.com" className="hover:text-foreground transition-colors">
-                mallikarjunkuri334@gmail.com
+              <a href={`mailto:${personalInfo.email}`} className="hover:text-foreground transition-colors">
+                {personalInfo.email}
               </a>
             </div>
-            <div className="text-accent">+91-7483989991</div>
+            <div className="text-accent">{personalInfo.phone}</div>
           </div>
         </div>
 
@@ -80,7 +104,7 @@ const Hero = () => {
         <div className="fade-in-up" style={{ animationDelay: '0.8s' }}>
           <div className="flex justify-center gap-6">
             <a
-              href="https://www.linkedin.com/in/mallikarjun-kuri-505211207/"
+              href={personalInfo.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-lg hover:border-primary/50 transition-all duration-300"
@@ -90,7 +114,7 @@ const Hero = () => {
               <ExternalLink size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
             </a>
             <a
-              href="https://github.com/MalliKarjun008"
+              href={personalInfo.github}
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-lg hover:border-primary/50 transition-all duration-300"

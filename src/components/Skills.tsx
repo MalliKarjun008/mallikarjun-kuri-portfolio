@@ -1,7 +1,9 @@
 import { Code, Database, Wrench, Terminal } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { portfolioAPI } from '@/lib/supabase';
 
 const Skills = () => {
-  const skillCategories = [
+  const [skillCategories, setSkillCategories] = useState([
     {
       title: "Programming Languages",
       icon: <Code className="text-primary" size={24} />,
@@ -20,7 +22,41 @@ const Skills = () => {
       skills: ["VS Code", "IntelliJ IDEA Ultimate", "Postman", "Terminal"],
       color: "accent"
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const data = await portfolioAPI.getSkills();
+        const formattedCategories = [
+          {
+            title: "Programming Languages",
+            icon: <Code className="text-primary" size={24} />,
+            skills: data.Languages || [],
+            color: "primary"
+          },
+          {
+            title: "Frameworks & Technologies", 
+            icon: <Database className="text-secondary" size={24} />,
+            skills: data["Frameworks/Technologies"] || [],
+            color: "secondary"
+          },
+          {
+            title: "Development Tools",
+            icon: <Wrench className="text-accent" size={24} />,
+            skills: data.Tools || [],
+            color: "accent"
+          }
+        ];
+        setSkillCategories(formattedCategories);
+      } catch (error) {
+        console.error('Error fetching skills:', error);
+        // Keep default values on error
+      }
+    };
+
+    fetchSkills();
+  }, []);
 
   return (
     <section id="skills" className="section-container">
